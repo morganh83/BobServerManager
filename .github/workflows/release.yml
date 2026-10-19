@@ -1,0 +1,35 @@
+name: Release
+
+# Push a tag like v1.2.0 to build the self-contained exe and publish it as a GitHub release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish exe
+        shell: bash
+        run: dotnet publish BobServerManager/BobServerManager.csproj -c Release -o publish -p:Version=${GITHUB_REF_NAME#v}
+
+      - name: Create release with exe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" publish/BobServerManager.exe --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" publish/BobServerManager.exe --title "$GITHUB_REF_NAME" \
+              --notes "Self-contained Windows x64 build. Download BobServerManager.exe and run it - no installer or .NET runtime needed."
+          fi

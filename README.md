@@ -21,6 +21,9 @@ dotnet publish -c Release -o publish
 
 That produces `publish\BobServerManager.exe`.
 
+To cut a release, push a version tag (e.g. `git tag v1.1.0 && git push origin v1.1.0`); the
+GitHub Actions workflow builds the exe and attaches it to the release automatically.
+
 ## What each tab does
 
 - **Dashboard** - Start/Stop/Restart Now/Update Server, a live log of the server's own console output, the
